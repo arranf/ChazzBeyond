@@ -18,6 +18,7 @@ function restore_options() {
     user_id: '',
     guild_id: '',
     roll_endpoint: '',
+    share_endpoint: ''
   }, function (items) {
     document.getElementById('config').value = JSON.stringify(items);
   });

@@ -16,6 +16,7 @@ if (chrome.declarativeContent) {
               },
             })
           ],
+          // TODO: Make this work
           // And shows the extension's page action.
           actions: [new chrome.declarativeContent.ShowPageAction()]
         }
@@ -27,12 +28,12 @@ if (chrome.declarativeContent) {
 
 function handleMessage(request, sender, sendResponse) {
   if (request.message == MESSAGE_NAME) {
-    sendRoll(request.host, request.data);
+    postToChazz(request.host, request.data);
   }
 }
 
-function sendRoll(host, data) {
-  console.log(data);
+function postToChazz(host, data) {
+  console.debug('Sent to Chazz', data);
   var xhr = new XMLHttpRequest();
   xhr.open('POST', host, true);
   xhr.setRequestHeader("Content-type", "application/json");

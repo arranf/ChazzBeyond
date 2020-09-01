@@ -4,9 +4,10 @@ const DND_BEYOND_OBSERVER = new MutationObserver(function mut(mutations, observe
     chrome.storage.local.get({
         roll_endpoint: '',
         user_id: '',
-        guild_id: ''
+        guild_id: '',
+        share_endpoint: ''
     }, function (configData) {
-        if (!configData.roll_endpoint.startsWith('http')) {
+        if (!configData.roll_endpoint) {
             // TODO: offer a floating pop up to configure
             return
         }
@@ -28,8 +29,7 @@ const DND_BEYOND_OBSERVER = new MutationObserver(function mut(mutations, observe
                 // Handle spells sharing
                 results = addedNode.getElementsByClassName('ct-spell-detail__description');
 
-                // TODO: Reenable
-                // handleSpellAndActionSharing(results, mutation, configData);
+                handleSpellAndActionSharing(results, addedNode, configData);
             }
         }
     });
@@ -88,15 +88,16 @@ function handleNormalRolls(results, configData) {
 }
 
 function handleSpellAndActionSharing(results, addedNode, configData) {
-    let actiontype = "spell";
-    let actionname = ""
+    let actionType = "spell";
+    let actionName = "";
+    // TODO MAKE THIS SAFE
     if (results[0]) {
-        actionname = addedNode.getElementsByClassName('ddbc-spell-name')[0].textContent;
+        actionName = addedNode.getElementsByClassName('ddbc-spell-name')[0].textContent;
     } else {
         results = addedNode.getElementsByClassName('ct-action-detail__description');
         if (results[0]) {
-            actiontype = "action";
-            actionname = addedNode.getElementsByClassName('ddbc-action-name')[0].textContent;
+            actionType = "action";
+            actionName = addedNode.getElementsByClassName('ddbc-action-name')[0].textContent;
         }
     }
 
@@ -108,9 +109,13 @@ function handleSpellAndActionSharing(results, addedNode, configData) {
 
     const characterName = document.getElementsByClassName('ddbc-character-name')[0].textContent;
     let json = {
-        "source": characterName + " shared the " + actiontype + ": \"" + actionname + "\"",
-        "type": "chat",
-        "content": results[0].innerText
+        character: characterName,
+        user_id: configData.user_id,
+        action: {
+            actionType,
+            actionName,
+            content: results[0].innerText
+        },
     };
 
     const dicetoolbar = document.getElementsByClassName('dice-toolbar')[0];
@@ -126,12 +131,12 @@ function handleSpellAndActionSharing(results, addedNode, configData) {
     sendToButton.addEventListener('click', function () {
         chrome.runtime.sendMessage({
             "message": MESSAGE_NAME,
-            "host": configData.roll_endpoint,
+            "host": configData.share_endpoint,
             "data": json
         });
     });
     results[0].appendChild(sendToDiv);
-    sendToDiv.appendChild(sendtoEButton);
+    sendToDiv.appendChild(sendToButton);
 }
 
 function createShareButton() {
