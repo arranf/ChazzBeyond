@@ -1,0 +1,47 @@
+{
+  "name": "ChazzBeyond",
+  "description": "A simple extension to send digital rolls from D&D Beyond to Chazz",
+  "manifest_version": 2,
+  "version": "0.1",
+  "icons": {
+    "48": "icons/encounter48.png",
+    "96": "icons/encounter96.png"
+  },
+  "permissions": [
+    "*://*/api/messages",
+    "storage",
+    "declarativeContent"
+  ],
+  "background": {
+    "scripts": [
+      "js/background.js"
+    ],
+    "persistent": true
+  },
+  "options_ui": {
+    "page": "options.html"
+  },
+  "page_action": {
+    "default_icon": {
+      "19": "icons/encounter19.png",
+      "38": "icons/encounter38.png"
+    },
+    "default_title": "ChazzBeyond",
+    "browser_style": true,
+    "default_popup": "options.html",
+    "show_matches": [
+      "https://*.dndbeyond.com/profile/*/characters/*"
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.dndbeyond.com/profile/*/characters/*"
+      ],
+      "run_at": "document_end",
+      "js": [
+        "js/dndbeyond.js"
+      ]
+    }
+  ]
+}

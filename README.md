@@ -1,1 +1,5 @@
 # ChazzBeyond
+
+```
+yarn build
+```
