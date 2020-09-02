@@ -1,6 +1,7 @@
 # ChazzBeyond
 
 A simple browser extension for rolling dice using DnD Beyond and sharing the results via Discord.
+It also shares spells and actions to Discord.
 
 ```sh
 yarn build

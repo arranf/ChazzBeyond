@@ -1,5 +1,5 @@
 const MESSAGE_NAME = 'postToChazz';
-console.log('ChazzBeyond is ready to rock and roll!')
+console.log('ChazzBeyond is ready to rock and roll nerds!');
 
 const DND_BEYOND_OBSERVER = new MutationObserver(function mut(mutations, observer) {
     chrome.storage.local.get({
