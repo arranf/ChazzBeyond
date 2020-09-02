@@ -1,5 +1,4 @@
 const MESSAGE_NAME = 'postToChazz';
-console.log('ChazzBeyond is ready to rock and roll nerds!');
 
 const DND_BEYOND_OBSERVER = new MutationObserver(function mut(mutations, observer) {
     chrome.storage.local.get({
@@ -39,14 +38,35 @@ const DND_BEYOND_OBSERVER = new MutationObserver(function mut(mutations, observe
 function handleNormalRolls(results, configData) {
     const characterName = document.getElementsByClassName('ddbc-character-name')[0].textContent;
     const latestRoll = results[results.length - 1];
-    const rollTitle = latestRoll.getElementsByClassName('dice_result__info__rolldetail')[0].textContent.split(':')[0];
+    let source = latestRoll.getElementsByClassName('dice_result__info__rolldetail')[0].textContent.split(':')[0];
     const rollNotation = latestRoll.getElementsByClassName('dice_result__info__dicenotation')[0].textContent;
     const rollBreakdown = latestRoll.getElementsByClassName('dice_result__info__breakdown')[0].textContent;
     const rollTotal = latestRoll.getElementsByClassName('dice_result__total-result')[0].textContent;
-    const rollType = latestRoll.getElementsByClassName('dice_result__rolltype')[0].textContent;
+    let rollType = latestRoll.getElementsByClassName('dice_result__rolltype')[0].textContent;
     const rollHeader = latestRoll.getElementsByClassName('dice_result__total-header');
+
+    // Cleanup this business logic into smaller chunks
+    let rollTypePrefix = '';
+    if (['cha', 'str', 'wis', 'int', 'dex', 'con'].includes(source)) {
+        source = getFullAttribute(source);
+        rollTypePrefix = source;
+    } else if (source === '"Initiative"') {
+        rollType = 'initiative';
+    }
+
     if (rollHeader.length > 0) {
-        rollTitle += ` (${rollHeader[0].textContent})`;
+        source += ` (${rollHeader[0].textContent})`;
+    }
+
+    // Ignore non-whitelisted roll types
+    if (!['check', 'save', 'attack', 'damage', 'to hit', 'heal', 'initiative'].includes(rollType)) {
+        rollType = '';
+    } else if (rollType == 'to hit') {
+        if (document.getElementsByClassName('ddbc-combat-attack--crit').length > 0) {
+            rollType += ' (CRIT)';
+        }
+    } else if (rollType === 'check' || rollType === 'save') {
+        rollType = rollTypePrefix ? `${rollTypePrefix.toLowerCase()} ${rollType}` : `${source} ${rollType}`;
     }
 
     let rolljson = {
@@ -55,22 +75,12 @@ function handleNormalRolls(results, configData) {
             'formula': rollNotation,
             'result': Number(rollTotal),
             'breakdown': rollBreakdown,
-            'source': rollTitle,
-            'type': '',
+            'source': source,
+            'type': rollType
         },
         color: '',
         user_id: configData.user_id
     };
-
-    // TODO: Refactor this condition logic for roll type
-    if (['check', 'save', 'attack', 'damage'].includes(rollType)) {
-        rolljson.roll.type = rollType;
-    } else if (rollType == 'to hit') {
-        rolljson.roll.type = 'attack';
-        if (document.getElementsByClassName('ddbc-combat-attack--crit').length > 0) {
-            rolljson.roll.source += ' (CRIT)';
-        }
-    }
 
     const dicetoolbar = document.getElementsByClassName('dice-toolbar')[0];
     if (dicetoolbar) {
@@ -94,15 +104,26 @@ function handleSpellAndActionSharing(addedNode, configData) {
     let actionType = 'spell';
     let actionName = '';
 
-    // TODO MAKE THIS SAFE
     if (detailNode) {
-        actionName = addedNode.getElementsByClassName('ddbc-spell-name')[0].textContent;
+        const spellNameNode = addedNode.getElementsByClassName('ddbc-spell-name')[0];
+        if (spellNameNode) {
+            actionName = spellNameNode.textContent;
+        } else {
+            const sidebar = document.getElementsByClassName('ct-sidebar__heading')[0];
+            actionName = sidebar.getElementsByClassName('ddbc-spell-name')[0].textContent;
+        }
     } else {
         const results = addedNode.getElementsByClassName('ct-action-detail__description');
         detailNode = results[0];
         if (detailNode) {
             actionType = 'action';
-            actionName = addedNode.getElementsByClassName('ddbc-action-name')[0].textContent;
+            const actionNameNode = addedNode.getElementsByClassName('ddbc-action-name')[0];
+            if (actionNameNode) {
+                actionName = actionNameNode.textContent;
+            } else {
+                const sidebar = document.getElementsByClassName('ct-sidebar__heading')[0];
+                actionName = sidebar.getElementsByClassName('ddbc-action-name')[0].textContent;
+            }
         }
     }
 
@@ -110,7 +131,6 @@ function handleSpellAndActionSharing(addedNode, configData) {
     if (!detailNode) {
         return;
     }
-
 
     const characterName = document.getElementsByClassName('ddbc-character-name')[0].textContent;
     const dicetoolbar = document.getElementsByClassName('dice-toolbar')[0];
@@ -171,6 +191,23 @@ function createShareButton() {
     sendToButton.style.textAlign = 'right';
 
     return { sendToButton, sendToDiv };
+}
+
+function getFullAttribute(attributeShorthand) {
+    switch (attributeShorthand) {
+        case 'cha':
+            return 'Charisma';
+        case 'int':
+            return 'Intellect';
+        case 'wis':
+            return 'Wisdom';
+        case 'dex':
+            return 'Dexterity';
+        case 'str':
+            return 'Strength';
+        case 'con':
+            return 'Constitution';
+    }
 }
 
 DND_BEYOND_OBSERVER.observe(document, { childList: true, subtree: true })
