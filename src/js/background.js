@@ -26,7 +26,7 @@ if (chrome.declarativeContent) {
 }
 
 
-function handleMessage(request, sender, sendResponse) {
+function handleMessage(request, _sender, _sendResponse) {
   if (request.message == MESSAGE_NAME) {
     postToChazz(request.host, request.data);
   }
