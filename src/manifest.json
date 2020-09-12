@@ -7,7 +7,12 @@
         "48": "icons/encounter48.png",
         "96": "icons/encounter96.png"
     },
-    "permissions": ["*://*/api/messages", "storage", "declarativeContent"],
+    "permissions": [
+        "storage",
+        "declarativeContent",
+        "https://www.dndbeyond.com/",
+        "https://chazz.arranfrance.com/"
+    ],
     "background": {
         "scripts": ["js/background.js"],
         "persistent": true
