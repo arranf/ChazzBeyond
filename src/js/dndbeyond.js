@@ -23,9 +23,10 @@ function getFullAttribute(attributeShorthand) {
 
 // From a RGB array return the hex representation
 function getHex(color) {
-    return `#0${parseInt(color[1]).toString(16).slice(-2)}0${parseInt(color[2])
-        .toString(16)
-        .slice(-2)}0${parseInt(color[3]).toString(16).slice(-2)}`;
+    const red = `${`0${parseInt(color[1]).toString(16)}`.slice(-2)}`;
+    const blue = `${`0${parseInt(color[2]).toString(16)}`.slice(-2)}`;
+    const green = `${`0${parseInt(color[3]).toString(16)}`.slice(-2)}`;
+    return `#${red}${blue}${green}`;
 }
 
 function handleNormalRolls(results, configData) {
