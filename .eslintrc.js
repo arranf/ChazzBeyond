@@ -21,4 +21,4 @@ module.exports = {
         'no-plusplus': ['error', { allowForLoopAfterthoughts: true }],
         'prefer-destructuring': ['error', { object: true, array: false }],
     },
-}
+};

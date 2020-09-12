@@ -1,23 +1,23 @@
 /* eslint-disable radix */
-const MESSAGE_NAME = 'postToChazz'
+const MESSAGE_NAME = 'postToChazz';
 
 // Turns a shorthand attribute into a longhand attribute e.g. 'cha' -> 'Charisma'
 function getFullAttribute(attributeShorthand) {
     switch (attributeShorthand) {
         case 'cha':
-            return 'Charisma'
+            return 'Charisma';
         case 'int':
-            return 'Intellect'
+            return 'Intellect';
         case 'wis':
-            return 'Wisdom'
+            return 'Wisdom';
         case 'dex':
-            return 'Dexterity'
+            return 'Dexterity';
         case 'str':
-            return 'Strength'
+            return 'Strength';
         case 'con':
-            return 'Constitution'
+            return 'Constitution';
         default:
-            throw new Error(`No matching longhand for ${attributeShorthand}`)
+            throw new Error(`No matching longhand for ${attributeShorthand}`);
     }
 }
 
@@ -25,43 +25,43 @@ function getFullAttribute(attributeShorthand) {
 function getHex(color) {
     return `#0${parseInt(color[1]).toString(16).slice(-2)}0${parseInt(color[2])
         .toString(16)
-        .slice(-2)}0${parseInt(color[3]).toString(16).slice(-2)}`
+        .slice(-2)}0${parseInt(color[3]).toString(16).slice(-2)}`;
 }
 
 function handleNormalRolls(results, configData) {
     const characterName = document.getElementsByClassName(
         'ddbc-character-name'
-    )[0].textContent
-    const latestRoll = results[results.length - 1]
+    )[0].textContent;
+    const latestRoll = results[results.length - 1];
     const rollNotation = latestRoll.getElementsByClassName(
         'dice_result__info__dicenotation'
-    )[0].textContent
+    )[0].textContent;
     const rollBreakdown = latestRoll.getElementsByClassName(
         'dice_result__info__breakdown'
-    )[0].textContent
+    )[0].textContent;
     const rollTotal = latestRoll.getElementsByClassName(
         'dice_result__total-result'
-    )[0].textContent
+    )[0].textContent;
     const rollHeader = latestRoll.getElementsByClassName(
         'dice_result__total-header'
-    )
+    );
     let rollType = latestRoll.getElementsByClassName('dice_result__rolltype')[0]
-        .textContent
+        .textContent;
     let source = latestRoll
         .getElementsByClassName('dice_result__info__rolldetail')[0]
-        .textContent.split(':')[0]
+        .textContent.split(':')[0];
 
     // Cleanup this business logic into smaller chunks
-    let rollTypePrefix = ''
+    let rollTypePrefix = '';
     if (['cha', 'str', 'wis', 'int', 'dex', 'con'].includes(source)) {
-        source = getFullAttribute(source)
-        rollTypePrefix = source
+        source = getFullAttribute(source);
+        rollTypePrefix = source;
     } else if (source === 'Initiative') {
-        rollType = 'initiative'
+        rollType = 'initiative';
     }
 
     if (rollHeader.length > 0) {
-        source += ` (${rollHeader[0].textContent})`
+        source += ` (${rollHeader[0].textContent})`;
     }
 
     // Ignore non-whitelisted roll types
@@ -76,18 +76,18 @@ function handleNormalRolls(results, configData) {
             'initiative',
         ].includes(rollType)
     ) {
-        rollType = ''
+        rollType = '';
     } else if (rollType === 'to hit') {
         if (
             document.getElementsByClassName('ddbc-combat-attack--crit').length >
             0
         ) {
-            rollType += ' (CRIT)'
+            rollType += ' (CRIT)';
         }
     } else if (rollType === 'check' || rollType === 'save') {
         rollType = rollTypePrefix
             ? `${rollTypePrefix.toLowerCase()} ${rollType}`
-            : `${source} ${rollType}`
+            : `${source} ${rollType}`;
     }
 
     const rollJSON = {
@@ -101,15 +101,15 @@ function handleNormalRolls(results, configData) {
         },
         color: '',
         user_id: configData.user_id,
-    }
+    };
 
-    const dicetoolbar = document.getElementsByClassName('dice-toolbar')[0]
+    const dicetoolbar = document.getElementsByClassName('dice-toolbar')[0];
     if (dicetoolbar) {
         const color = window
             .getComputedStyle(dicetoolbar)
-            .backgroundColor.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/)
+            .backgroundColor.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
         if (color) {
-            rollJSON.color = getHex(color)
+            rollJSON.color = getHex(color);
         }
     }
 
@@ -117,89 +117,89 @@ function handleNormalRolls(results, configData) {
         message: MESSAGE_NAME,
         host: configData.roll_endpoint,
         data: rollJSON,
-    })
+    });
 }
 
 function createShareButton() {
-    const sendToDiv = document.createElement('div')
-    sendToDiv.style.textAlign = 'right'
-    sendToDiv.style.marginTop = 10
-    const sendToButton = document.createElement('button')
-    sendToButton.id = 'sendToChazz'
+    const sendToDiv = document.createElement('div');
+    sendToDiv.style.textAlign = 'right';
+    sendToDiv.style.marginTop = 10;
+    const sendToButton = document.createElement('button');
+    sendToButton.id = 'sendToChazz';
     sendToButton.classList.add(
         'ct-theme-button',
         'ct-theme-button--filled',
         'ct-theme-button--interactive',
         'ct-button',
         'character-button'
-    )
-    sendToButton.innerText = 'Share using Chazz'
-    sendToButton.style.textAlign = 'right'
+    );
+    sendToButton.innerText = 'Share using Chazz';
+    sendToButton.style.textAlign = 'right';
 
-    return { sendToButton, sendToDiv }
+    return { sendToButton, sendToDiv };
 }
 
 function handleSpellAndActionSharing(addedNode, configData) {
     const spellDetailDescriptionElements = addedNode.getElementsByClassName(
         'ct-spell-detail__description'
-    )
-    let detailNode = spellDetailDescriptionElements[0]
-    let actionType = 'spell'
-    let actionName = ''
+    );
+    let detailNode = spellDetailDescriptionElements[0];
+    let actionType = 'spell';
+    let actionName = '';
 
     if (detailNode) {
         const spellNameNode = addedNode.getElementsByClassName(
             'ddbc-spell-name'
-        )[0]
+        )[0];
         if (spellNameNode) {
-            actionName = spellNameNode.textContent
+            actionName = spellNameNode.textContent;
         } else {
             const sidebar = document.getElementsByClassName(
                 'ct-sidebar__heading'
-            )[0]
+            )[0];
             actionName = sidebar.getElementsByClassName('ddbc-spell-name')[0]
-                .textContent
+                .textContent;
         }
     } else {
         const results = addedNode.getElementsByClassName(
             'ct-action-detail__description'
-        )
-        detailNode = results[0]
+        );
+        detailNode = results[0];
         if (detailNode) {
-            actionType = 'action'
+            actionType = 'action';
             const actionNameNode = addedNode.getElementsByClassName(
                 'ddbc-action-name'
-            )[0]
+            )[0];
             if (actionNameNode) {
-                actionName = actionNameNode.textContent
+                actionName = actionNameNode.textContent;
             } else {
                 const sidebar = document.getElementsByClassName(
                     'ct-sidebar__heading'
-                )[0]
+                )[0];
                 actionName = sidebar.getElementsByClassName(
                     'ddbc-action-name'
-                )[0].textContent
+                )[0].textContent;
             }
         }
     }
 
     // If we didn't find a description - we're done.
     if (!detailNode) {
-        return
+        return;
     }
 
     const characterName = document.getElementsByClassName(
         'ddbc-character-name'
-    )[0].textContent
-    const dicetoolbar = document.getElementsByClassName('dice-toolbar')[0]
+    )[0].textContent;
+    const dicetoolbar = document.getElementsByClassName('dice-toolbar')[0];
 
-    let colorHex = ''
+    let colorHex = '';
     if (dicetoolbar) {
         const color = window
             .getComputedStyle(dicetoolbar)
-            .backgroundColor.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/)
+            .backgroundColor.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
         if (color) {
-            colorHex = getHex(color)
+            colorHex = getHex(color);
         }
     }
 
@@ -212,29 +212,29 @@ function handleSpellAndActionSharing(addedNode, configData) {
             actionName,
             content: detailNode.innerHTML,
         },
-    }
+    };
 
-    const sendToChazzButton = document.getElementById('sendToChazz')
+    const sendToChazzButton = document.getElementById('sendToChazz');
     if (sendToChazzButton) {
-        sendToChazzButton.removeEventListener('click')
+        sendToChazzButton.removeEventListener('click');
         sendToChazzButton.addEventListener('click', () => {
             chrome.runtime.sendMessage({
                 message: MESSAGE_NAME,
                 host: configData.share_endpoint,
                 data: json,
-            })
-        })
+            });
+        });
     } else {
-        const { sendToButton, sendToDiv } = createShareButton()
+        const { sendToButton, sendToDiv } = createShareButton();
         sendToButton.addEventListener('click', () => {
             chrome.runtime.sendMessage({
                 message: MESSAGE_NAME,
                 host: configData.share_endpoint,
                 data: json,
-            })
-        })
-        detailNode.appendChild(sendToDiv)
-        sendToDiv.appendChild(sendToButton)
+            });
+        });
+        detailNode.appendChild(sendToDiv);
+        sendToDiv.appendChild(sendToButton);
     }
 }
 
@@ -252,30 +252,30 @@ const DND_BEYOND_OBSERVER = new MutationObserver(function mut(
         (configData) => {
             if (!configData.roll_endpoint) {
                 // TODO: offer a floating pop up to configure
-                return
+                return;
             }
 
             for (let i = 0; i < mutations.length; i++) {
-                const mutation = mutations[i]
+                const mutation = mutations[i];
                 for (let m = 0; m < mutation.addedNodes.length; m++) {
-                    const addedNode = mutation.addedNodes[m]
+                    const addedNode = mutation.addedNodes[m];
                     if (addedNode.nodeType === Node.ELEMENT_NODE) {
                         // Handle dice results
                         const diceResultsElements = addedNode.getElementsByClassName(
                             'dice_result'
-                        )
+                        );
                         if (diceResultsElements.length > 0) {
-                            handleNormalRolls(diceResultsElements, configData)
-                            return
+                            handleNormalRolls(diceResultsElements, configData);
+                            return;
                         }
 
                         // Handle spells sharing
-                        handleSpellAndActionSharing(addedNode, configData)
+                        handleSpellAndActionSharing(addedNode, configData);
                     }
                 }
             }
         }
-    )
-})
+    );
+});
 
-DND_BEYOND_OBSERVER.observe(document, { childList: true, subtree: true })
+DND_BEYOND_OBSERVER.observe(document, { childList: true, subtree: true });

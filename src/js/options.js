@@ -1,14 +1,14 @@
 // Saves options to chrome.storage
 function saveOptions() {
-    const options = document.getElementById('config').value
+    const options = document.getElementById('config').value;
     chrome.storage.local.set(JSON.parse(options), () => {
         // Update status to let user know options were saved.
-        const status = document.getElementById('status')
-        status.hidden = false
+        const status = document.getElementById('status');
+        status.hidden = false;
         setTimeout(() => {
-            status.hidden = true
-        }, 3000)
-    })
+            status.hidden = true;
+        }, 3000);
+    });
 }
 
 // Restores select box and checkbox state using the preferences
@@ -22,11 +22,11 @@ function restoreOptions() {
             share_endpoint: '',
         },
         (items) => {
-            document.getElementById('config').value = JSON.stringify(items)
+            document.getElementById('config').value = JSON.stringify(items);
         }
-    )
+    );
 }
 document.addEventListener('DOMContentLoaded', () => {
-    restoreOptions()
-    document.getElementById('save').addEventListener('click', saveOptions)
-})
+    restoreOptions();
+    document.getElementById('save').addEventListener('click', saveOptions);
+});
