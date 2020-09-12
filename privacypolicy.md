@@ -10,7 +10,7 @@ We only log basic diagnostic information: messages sent to and from our servers 
 
 ## Children's Information
 
-This service is provided as is, for all ages. 
+This service is provided as is, for all ages.
 
 ## Online Privacy Policy Only
 
