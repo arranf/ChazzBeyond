@@ -140,6 +140,28 @@ function createShareButton() {
     return { sendToButton, sendToDiv };
 }
 
+function getSpellActionProperties(node) {
+    const nodeResults = node.getElementsByClassName('ddbc-property-list');
+    const propertyContainerNode = nodeResults[0];
+    if (!propertyContainerNode) {
+        return [];
+    }
+    const children = propertyContainerNode.childNodes;
+
+    const properties = [];
+    for (let i = 0; i < children.length; i++) {
+        const propertyChildNode = children[i];
+        const label = propertyChildNode.getElementsByClassName(
+            'ddbc-property-list__property-label'
+        )[0].innerText;
+        const content = propertyChildNode.getElementsByClassName(
+            'ddbc-property-list__property-content'
+        )[0].innerText;
+        properties.push({ label, content });
+    }
+    return properties;
+}
+
 function handleSpellAndActionSharing(addedNode, configData) {
     const spellDetailDescriptionElements = addedNode.getElementsByClassName(
         'ct-spell-detail__description'
@@ -189,6 +211,8 @@ function handleSpellAndActionSharing(addedNode, configData) {
         return;
     }
 
+    const spellProperties = getSpellActionProperties(addedNode);
+
     const characterName = document.getElementsByClassName(
         'ddbc-character-name'
     )[0].textContent;
@@ -213,6 +237,7 @@ function handleSpellAndActionSharing(addedNode, configData) {
             actionName,
             content: detailNode.innerHTML,
         },
+        properties: spellProperties,
     };
 
     const sendToChazzButton = document.getElementById('sendToChazz');

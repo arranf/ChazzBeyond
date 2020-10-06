@@ -1,4 +1,6 @@
 const MESSAGE_NAME = 'postToChazz';
+// TODO: https://www.npmjs.com/package/gulp-update-version
+const VERSION = '0.3.2';
 
 if (chrome.declarativeContent) {
     chrome.runtime.onInstalled.addListener(() => {
@@ -31,7 +33,7 @@ function postToChazz(host, data) {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', host, true);
     xhr.setRequestHeader('Content-type', 'application/json');
-    xhr.send(JSON.stringify(data));
+    xhr.send(JSON.stringify({ ...data, version: VERSION }));
 }
 
 function handleMessage(request, _sender, _sendResponse) {
