@@ -27,16 +27,18 @@ function html() {
 
 // Copy vendor scripts and uglify all other scripts, creating source maps
 function js() {
-    return src('src/js//*.js')
-        .pipe(sourcemaps.init())
-        .pipe(
-            babel({
-                presets: ['@babel/preset-env'],
-            })
-        )
-        .pipe(minify())
-        .pipe(sourcemaps.write())
-        .pipe(dest('build/js'));
+    return (
+        src('src/js//*.js')
+            .pipe(sourcemaps.init())
+            .pipe(
+                babel({
+                    presets: ['@babel/preset-env'],
+                })
+            )
+            // .pipe(minify())
+            .pipe(sourcemaps.write())
+            .pipe(dest('build/js'))
+    );
 }
 
 // Minify styles

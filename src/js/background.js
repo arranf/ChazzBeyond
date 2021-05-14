@@ -1,6 +1,6 @@
 const MESSAGE_NAME = 'postToChazz';
 // TODO: https://www.npmjs.com/package/gulp-update-version
-const VERSION = '0.3.2';
+const VERSION = '0.4.0';
 
 if (chrome.declarativeContent) {
     chrome.runtime.onInstalled.addListener(() => {
@@ -13,8 +13,6 @@ if (chrome.declarativeContent) {
                         new chrome.declarativeContent.PageStateMatcher({
                             pageUrl: {
                                 hostSuffix: '.dndbeyond.com',
-                                pathContains: '/characters/',
-                                pathPrefix: '/profile/',
                             },
                         }),
                     ],

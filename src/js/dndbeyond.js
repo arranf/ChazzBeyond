@@ -1,6 +1,9 @@
 /* eslint-disable radix */
 const MESSAGE_NAME = 'postToChazz';
 
+// eslint-disable-next-line no-console
+console.debug('Chazz Beyond running');
+
 // Turns a shorthand attribute into a longhand attribute e.g. 'cha' -> 'Charisma'
 function getFullAttribute(attributeShorthand) {
     switch (attributeShorthand) {
@@ -29,10 +32,20 @@ function getHex(color) {
     return `#${red}${blue}${green}`;
 }
 
+// Handles dice being rolled
 function handleNormalRolls(results, configData) {
-    const characterName = document.getElementsByClassName(
+    let characterName = '';
+    const characterNameNode = document.getElementsByClassName(
         'ddbc-character-name'
-    )[0].textContent;
+    )[0];
+    if (characterNameNode) {
+        characterName = characterNameNode.textContent;
+    } else if (window.location.toString().indexOf('characters') !== -1) {
+        characterName = 'Unknown';
+    } else {
+        // We know the user is a DM or rolling on items/monsters
+        characterName = undefined;
+    }
     const latestRoll = results[results.length - 1];
     const rollNotation = latestRoll.getElementsByClassName(
         'dice_result__info__dicenotation'
@@ -59,6 +72,8 @@ function handleNormalRolls(results, configData) {
         rollTypePrefix = source;
     } else if (source === 'Initiative') {
         rollType = 'initiative';
+    } else if (source === 'HP') {
+        rollType = 'hitpoints';
     }
 
     if (rollHeader.length > 0) {
@@ -75,9 +90,15 @@ function handleNormalRolls(results, configData) {
             'to hit',
             'heal',
             'initiative',
+            // Potentially sensitive rolls
+            // 'recharge',
+            // 'hitpoints',
         ].includes(rollType)
     ) {
         rollType = '';
+    } else if (rollType === 'recharge') {
+        rollType = `${source} recharge`;
+        source = rollType;
     } else if (rollType === 'to hit') {
         if (
             document.getElementsByClassName('ddbc-combat-attack--crit').length >
@@ -140,7 +161,8 @@ function createShareButton() {
     return { sendToButton, sendToDiv };
 }
 
-function getSpellActionProperties(node) {
+// Gets the list of properties (casting time, components, etc.)
+function getSpellActionProperties(node, actionType) {
     const nodeResults = node.getElementsByClassName('ddbc-property-list');
     const propertyContainerNode = nodeResults[0];
     if (!propertyContainerNode) {
@@ -159,59 +181,116 @@ function getSpellActionProperties(node) {
         )[0].innerText;
         properties.push({ label, content });
     }
+    if (actionType === 'spell') {
+        const items = document.getElementsByClassName(
+            'ct-spell-detail__level-school-item'
+        );
+        properties.push({ label: 'School', content: items[0].innerText });
+        properties.push({ label: 'Level', content: items[1].innerText });
+    }
+
     return properties;
 }
 
-function handleSpellAndActionSharing(addedNode, configData) {
+// Handles spell panes
+function getSpellDetails(addedNode) {
     const spellDetailDescriptionElements = addedNode.getElementsByClassName(
         'ct-spell-detail__description'
     );
-    let detailNode = spellDetailDescriptionElements[0];
-    let actionType = 'spell';
-    let actionName = '';
-
-    if (detailNode) {
-        const spellNameNode = addedNode.getElementsByClassName(
-            'ddbc-spell-name'
-        )[0];
-        if (spellNameNode) {
-            actionName = spellNameNode.textContent;
-        } else {
-            const sidebar = document.getElementsByClassName(
-                'ct-sidebar__heading'
-            )[0];
-            actionName = sidebar.getElementsByClassName('ddbc-spell-name')[0]
-                .textContent;
-        }
+    const detailNode = spellDetailDescriptionElements[0];
+    if (!detailNode) {
+        return undefined;
+    }
+    const spellNameNode = addedNode.getElementsByClassName(
+        'ddbc-spell-name'
+    )[0];
+    let actionName;
+    if (spellNameNode) {
+        actionName = spellNameNode.textContent;
     } else {
-        const results = addedNode.getElementsByClassName(
-            'ct-action-detail__description'
-        );
-        detailNode = results[0];
-        if (detailNode) {
-            actionType = 'action';
-            const actionNameNode = addedNode.getElementsByClassName(
-                'ddbc-action-name'
-            )[0];
-            if (actionNameNode) {
-                actionName = actionNameNode.textContent;
-            } else {
-                const sidebar = document.getElementsByClassName(
-                    'ct-sidebar__heading'
-                )[0];
-                actionName = sidebar.getElementsByClassName(
-                    'ddbc-action-name'
-                )[0].textContent;
-            }
-        }
+        const sidebar = document.getElementsByClassName(
+            'ct-sidebar__heading'
+        )[0];
+        actionName = sidebar.getElementsByClassName('ddbc-spell-name')[0]
+            .textContent;
+    }
+    return {
+        actionType: 'spell',
+        actionName,
+        detailNode,
+    };
+}
+
+// Handles action panes
+function getActionDetails(addedNode) {
+    const results = addedNode.getElementsByClassName(
+        'ct-action-detail__description'
+    );
+    const detailNode = results[0];
+    if (!detailNode) {
+        return undefined;
+    }
+    const actionNameNode = addedNode.getElementsByClassName(
+        'ddbc-action-name'
+    )[0];
+    let actionName;
+    if (actionNameNode) {
+        actionName = actionNameNode.textContent;
+    } else {
+        const sidebar = document.getElementsByClassName(
+            'ct-sidebar__heading'
+        )[0];
+        actionName = sidebar.getElementsByClassName('ddbc-action-name')[0]
+            .textContent;
+    }
+    return { actionType: 'action', actionName, detailNode };
+}
+
+// Handles racial, feat, and class features panes
+function getFeatureDetails(addedNode) {
+    let sidebarHeader = addedNode.getElementsByClassName(
+        'ct-sidebar__header-parent'
+    )[0];
+    if (!sidebarHeader) {
+        sidebarHeader = addedNode.getElementsByClassName(
+            'ct-sidebar__header-primary'
+        )[0];
     }
 
+    if (!sidebarHeader) {
+        return undefined;
+    }
+    let paneNode = document.getElementsByClassName('ct-class-feature-pane')[0];
+    if (!paneNode) {
+        paneNode = document.getElementsByClassName('ct-racial-trait-pane')[0];
+    }
+    if (!paneNode) {
+        paneNode = document.getElementsByClassName('ct-feat-pane')[0];
+    }
+
+    if (!paneNode) {
+        return undefined;
+    }
+    const actionName = document.getElementsByClassName('ct-sidebar__heading')[0]
+        .textContent;
+    const detailNode = paneNode.getElementsByClassName('ct-feature-snippet')[0];
+    return { actionType: 'feature', actionName, detailNode, paneNode };
+}
+
+function handleSnippetSharing(addedNode, configData) {
+    let result;
+    [getSpellDetails, getActionDetails, getFeatureDetails].some(
+        // eslint-disable-next-line no-return-assign
+        (fn) => (result = fn(addedNode))
+    );
     // If we didn't find a description - we're done.
-    if (!detailNode) {
+    if (!result) {
         return;
     }
 
-    const spellProperties = getSpellActionProperties(addedNode);
+    const { actionName, actionType, detailNode, paneNode } = result;
+
+    const properties = getSpellActionProperties(addedNode, actionType);
 
     const characterName = document.getElementsByClassName(
         'ddbc-character-name'
@@ -237,8 +316,11 @@ function handleSpellAndActionSharing(addedNode, configData) {
             actionName,
             content: detailNode.innerHTML,
         },
-        properties: spellProperties,
+        properties,
     };
+    console.group('Prepared data to send');
+    console.debug(json);
+    console.groupEnd();
 
     const sendToChazzButton = document.getElementById('sendToChazz');
     if (sendToChazzButton) {
@@ -251,6 +333,7 @@ function handleSpellAndActionSharing(addedNode, configData) {
             });
         });
     } else {
+        const rootNode = paneNode || detailNode;
         const { sendToButton, sendToDiv } = createShareButton();
         sendToButton.addEventListener('click', () => {
             chrome.runtime.sendMessage({
@@ -259,7 +342,7 @@ function handleSpellAndActionSharing(addedNode, configData) {
                 data: json,
             });
         });
-        detailNode.appendChild(sendToDiv);
+        rootNode.appendChild(sendToDiv);
         sendToDiv.appendChild(sendToButton);
     }
 }
@@ -295,8 +378,13 @@ const DND_BEYOND_OBSERVER = new MutationObserver(function mut(
                             return;
                         }
 
-                        // Handle spells sharing
-                        handleSpellAndActionSharing(addedNode, configData);
+                        if (
+                            window.location.toString().indexOf('characters') !==
+                            -1
+                        ) {
+                            // Handle spells sharing
+                            handleSnippetSharing(addedNode, configData);
+                        }
                     }
                 }
             }
@@ -304,4 +392,7 @@ const DND_BEYOND_OBSERVER = new MutationObserver(function mut(
     );
 });
 
-DND_BEYOND_OBSERVER.observe(document, { childList: true, subtree: true });
+DND_BEYOND_OBSERVER.observe(document.body, {
+    childList: true,
+    subtree: true,
+});
