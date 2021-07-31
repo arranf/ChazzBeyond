@@ -1,6 +1,6 @@
 const MESSAGE_NAME = 'postToChazz';
 // TODO: https://www.npmjs.com/package/gulp-update-version
-const VERSION = '0.4.0';
+const VERSION = '0.4.1';
 
 if (chrome.declarativeContent) {
     chrome.runtime.onInstalled.addListener(() => {

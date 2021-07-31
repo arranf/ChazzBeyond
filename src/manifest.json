@@ -2,7 +2,7 @@
     "name": "ChazzBeyond",
     "description": "A simple extension to send digital rolls from D&D Beyond to Chazz",
     "manifest_version": 2,
-    "version": "0.4.0",
+    "version": "0.4.1",
     "icons": {
         "48": "icons/encounter48.png",
         "96": "icons/encounter96.png"
@@ -31,7 +31,8 @@
         "show_matches": [
             "https://*.dndbeyond.com/profile/*/characters/*",
             "https://*.dndbeyond.com/encounter-builder",
-            "https://*.dndbeyond.com/combat-tracker/*"
+            "https://*.dndbeyond.com/combat-tracker/*",
+            "https://*.dndbeyond.com/encounters/*"
         ]
     },
     "content_scripts": [
@@ -39,7 +40,8 @@
             "matches": [
                 "https://*.dndbeyond.com/profile/*/characters/*",
                 "https://*.dndbeyond.com/encounter-builder",
-                "https://*.dndbeyond.com/combat-tracker/*"
+                "https://*.dndbeyond.com/combat-tracker/*",
+                "https://*.dndbeyond.com/encounters/*"
             ],
             "run_at": "document_end",
             "js": ["js/dndbeyond.js"]

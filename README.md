@@ -4,6 +4,7 @@ A simple browser extension for rolling dice using DnD Beyond and sharing the res
 It also shares spells and actions to Discord.
 
 ```sh
+yarn start 
 yarn build
 ```
 

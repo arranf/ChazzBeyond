@@ -2,7 +2,7 @@
 const MESSAGE_NAME = 'postToChazz';
 
 // eslint-disable-next-line no-console
-console.debug('Chazz Beyond running');
+console.debug("Chazz Beyond running. Let's Chazz it up!");
 
 // Turns a shorthand attribute into a longhand attribute e.g. 'cha' -> 'Charisma'
 function getFullAttribute(attributeShorthand) {
@@ -318,10 +318,6 @@ function handleSnippetSharing(addedNode, configData) {
         },
         properties,
     };
-    console.group('Prepared data to send');
-    console.debug(json);
-    console.groupEnd();
-
     const sendToChazzButton = document.getElementById('sendToChazz');
     if (sendToChazzButton) {
         sendToChazzButton.removeEventListener('click');

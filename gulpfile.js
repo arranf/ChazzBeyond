@@ -6,7 +6,6 @@ const cleanhtml = require('gulp-cleanhtml');
 const minifycss = require('gulp-minify-css');
 const gulpZip = require('gulp-zip');
 const babel = require('gulp-babel');
-const minify = require('gulp-uglify');
 const sourcemaps = require('gulp-sourcemaps');
 
 // Clean build directory
