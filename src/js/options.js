@@ -9,6 +9,7 @@ function saveOptions() {
             status.hidden = true;
         }, 3000);
     });
+    chrome.tabs.reload();
 }
 
 // Restores select box and checkbox state using the preferences

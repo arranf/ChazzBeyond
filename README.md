@@ -5,7 +5,7 @@ It also shares spells and actions to Discord.
 
 ```sh
 yarn start 
-yarn build
+yarn zip
 ```
 
 ## Usage

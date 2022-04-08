@@ -4,10 +4,15 @@ module.exports = {
         es2021: true,
         webextensions: true,
     },
-    extends: ['airbnb-base', 'prettier'],
+    parser: '@babel/eslint-parser',
     parserOptions: {
-        ecmaVersion: 12,
+        sourceType: 'module',
+        allowImportExportEverywhere: false,
+        ecmaFeatures: {
+            globalReturn: false,
+        },
     },
+    extends: ['eslint:recommended', 'prettier'],
     rules: {
         'no-unused-vars': [
             'error',
